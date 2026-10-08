@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.HabitsFirst" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary_emerald</item>
+        <item name="colorPrimaryVariant">@color/primary_emerald_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        
+        <item name="colorSecondary">@color/accent_cyan</item>
+        <item name="colorOnSecondary">@color/white</item>
+
+        <item name="colorSurface">@color/surface_card</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+
+        <item name="android:windowBackground">@color/bg_dark</item>
+        <item name="android:statusBarColor">@color/bg_dark</item>
+        <item name="android:navigationBarColor">@color/bg_dark</item>
+        <item name="android:windowLightStatusBar">true</item>
+
+        <!-- Material Dialog Theme matching app colors -->
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.HabitsFirst.Dialog</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.HabitsFirst.Dialog</item>
+    </style>
+
+    <style name="ThemeOverlay.HabitsFirst.Dialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorSurface">@color/surface_card</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.HabitsFirst.DialogButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.HabitsFirst.DialogButton</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Widget.HabitsFirst.DialogButton.Neutral</item>
+    </style>
+
+    <style name="Widget.HabitsFirst.DialogButton" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:textColor">@color/primary_emerald</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Widget.HabitsFirst.DialogButton.Neutral" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:textColor">@color/accent_red</item>
+    </style>
+</resources>

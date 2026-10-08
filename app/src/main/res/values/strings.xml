@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Habits First</string>
+    <string name="app_tagline">Do the thing, then scroll.</string>
+    <string name="app_subtitle">Earn your apps back</string>
+    
+    <string name="tab_habits">Habits</string>
+    <string name="tab_blocks">Blocks</string>
+    <string name="tab_streaks">Streaks</string>
+    <string name="tab_settings">Settings</string>
+
+    <string name="accessibility_service_desc">Habits First uses this service to detect when distracting apps are opened and keep them locked until your daily habits are finished.</string>
+</resources>
