@@ -378,6 +378,18 @@ class MainActivity : AppCompatActivity() {
         findViewById<MaterialButton>(R.id.btn_reset_history).setOnClickListener {
             showResetHistoryConfirmation()
         }
+
+        findViewById<View>(R.id.btn_add_block_rule)?.setOnClickListener {
+            showCreateBlockRuleDialog()
+        }
+
+        findViewById<View>(R.id.btn_restore_default_block_rules)?.setOnClickListener {
+            showResetDefaultBlockRulesConfirmation()
+        }
+
+        findViewById<View>(R.id.btn_restore_empty_habits)?.setOnClickListener {
+            showResetDefaultsConfirmation()
+        }
     }
 
     private fun refreshAllData() {
@@ -397,7 +409,11 @@ class MainActivity : AppCompatActivity() {
 
             habitAdapter.updateData(habits)
             settingsHabitAdapter.updateData(habits)
-            blockRuleAdapter.updateData(repository.getAllBlockRules())
+            val rules = repository.getAllBlockRules()
+            blockRuleAdapter.updateData(rules)
+
+            findViewById<View>(R.id.layout_habits_empty)?.visibility = if (habits.isEmpty()) View.VISIBLE else View.GONE
+            findViewById<View>(R.id.layout_blocks_empty)?.visibility = if (rules.isEmpty()) View.VISIBLE else View.GONE
 
             // Refresh heatmap & streaks
             heatmapView.setData(repository.getHistoryCompletions())
@@ -729,16 +745,75 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun showAppPickerDialog(rule: BlockRule) {
-        val pm = packageManager
-        val installedApps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
-            .filter { (it.flags and ApplicationInfo.FLAG_SYSTEM) == 0 || isPopularSocialApp(it.packageName) }
-            .filterNot { PaymentSafetyHelper.isExemptFromBlocking(it.packageName) }
-            .sortedBy { pm.getApplicationLabel(it).toString().lowercase() }
+    data class BlockableAppItem(val label: String, val packageName: String)
 
-        val appNames = installedApps.map { pm.getApplicationLabel(it).toString() }.toTypedArray()
-        val checkedItems = BooleanArray(installedApps.size) { i ->
-            rule.blockedPackages.contains(installedApps[i].packageName)
+    private fun getAvailableAppsForBlocking(rule: BlockRule): List<BlockableAppItem> {
+        val pm = packageManager
+        val itemsMap = mutableMapOf<String, String>() // packageName -> label
+
+        // 1. Query launcher intent apps (primary method for user apps on modern Android)
+        try {
+            val launcherIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+            val resolveInfos = pm.queryIntentActivities(launcherIntent, 0)
+            for (ri in resolveInfos) {
+                val pkg = ri.activityInfo.packageName
+                if (!PaymentSafetyHelper.isExemptFromBlocking(pkg) && pkg != packageName) {
+                    val label = ri.loadLabel(pm).toString()
+                    itemsMap[pkg] = label
+                }
+            }
+        } catch (_: Throwable) {}
+
+        // 2. Query installed applications
+        try {
+            val apps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
+            for (app in apps) {
+                val pkg = app.packageName
+                if (!PaymentSafetyHelper.isExemptFromBlocking(pkg) && pkg != packageName) {
+                    val isSystem = (app.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+                    if (!isSystem || isPopularSocialApp(pkg)) {
+                        val label = pm.getApplicationLabel(app).toString()
+                        itemsMap[pkg] = label
+                    }
+                }
+            }
+        } catch (_: Throwable) {}
+
+        // 3. Ensure popular distracting apps and currently configured packages are included
+        val knownNames = mapOf(
+            "com.instagram.android" to "Instagram",
+            "com.zhiliaoapp.musically" to "TikTok",
+            "com.google.android.youtube" to "YouTube",
+            "com.twitter.android" to "X (Twitter)",
+            "com.reddit.frontpage" to "Reddit",
+            "com.facebook.katana" to "Facebook",
+            "com.snapchat.android" to "Snapchat",
+            "com.netflix.mediaclient" to "Netflix",
+            "com.amazon.avod.thirdpartyclient" to "Prime Video",
+            "com.spotify.music" to "Spotify",
+            "com.duolingo" to "Duolingo",
+            "com.android.chrome" to "Google Chrome"
+        )
+        for (pkg in rule.blockedPackages) {
+            if (!itemsMap.containsKey(pkg)) {
+                itemsMap[pkg] = knownNames[pkg] ?: pkg
+            }
+        }
+
+        for ((pkg, label) in knownNames) {
+            if (!itemsMap.containsKey(pkg) && !PaymentSafetyHelper.isExemptFromBlocking(pkg)) {
+                itemsMap[pkg] = label
+            }
+        }
+
+        return itemsMap.map { BlockableAppItem(it.value, it.key) }.sortedBy { it.label.lowercase() }
+    }
+
+    private fun showAppPickerDialog(rule: BlockRule) {
+        val availableApps = getAvailableAppsForBlocking(rule)
+        val appNames = availableApps.map { it.label }.toTypedArray()
+        val checkedItems = BooleanArray(availableApps.size) { i ->
+            rule.blockedPackages.contains(availableApps[i].packageName)
         }
 
         com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
@@ -750,12 +825,54 @@ class MainActivity : AppCompatActivity() {
                 val selectedPackages = mutableListOf<String>()
                 for (i in checkedItems.indices) {
                     if (checkedItems[i]) {
-                        selectedPackages.add(installedApps[i].packageName)
+                        selectedPackages.add(availableApps[i].packageName)
                     }
                 }
                 repository.updateBlockRule(rule.copy(blockedPackages = selectedPackages))
                 refreshAllData()
                 Toast.makeText(this, "Updated blocked apps for ${rule.name}", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showCreateBlockRuleDialog() {
+        val input = EditText(this).apply {
+            hint = "e.g. Social Media, Games, Streaming"
+            setPadding(40, 30, 40, 30)
+        }
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle("Create New Block Rule")
+            .setMessage("Enter a name for this app blocking rule:")
+            .setView(input)
+            .setPositiveButton("Next: Select Apps") { _, _ ->
+                val name = input.text.toString().trim().ifBlank { "Distracting Apps" }
+                val newRule = BlockRule(
+                    id = "rule_${UUID.randomUUID()}",
+                    name = name,
+                    blockedPackages = emptyList(),
+                    conditionType = RuleConditionType.ALL_HABITS,
+                    requiredHabitIds = repository.getAllHabits().map { it.id },
+                    requiredCount = 1,
+                    isEnabled = true,
+                    strictMode = false
+                )
+                repository.addBlockRule(newRule)
+                refreshAllData()
+                showAppPickerDialog(newRule)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showResetDefaultBlockRulesConfirmation() {
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle("Restore Default Block Rules")
+            .setMessage("This will reset your block rules to the default social and distracting app group. Continue?")
+            .setPositiveButton("Restore") { _, _ ->
+                repository.resetDefaultBlockRules()
+                refreshAllData()
+                Toast.makeText(this, "Default block rules restored", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Cancel", null)
             .show()

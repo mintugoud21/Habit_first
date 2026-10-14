@@ -62,6 +62,10 @@ class BlockRuleAdapter(
             btnManageApps.setOnClickListener {
                 onManageApps(rule)
             }
+
+            itemView.setOnClickListener {
+                onManageApps(rule)
+            }
         }
     }
 }

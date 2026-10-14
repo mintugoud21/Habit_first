@@ -66,29 +66,39 @@ class HabitRepository private constructor(context: Context) {
 
     fun getTodayDateStr(): String = dateFormat.format(Date())
 
+    @Volatile
+    private var isCheckingMidnight = false
+
     fun checkMidnightReset() {
-        val lastSavedDate = prefs.getString("last_active_date", "") ?: ""
-        val today = getTodayDateStr()
-        if (lastSavedDate != today) {
-            // New day! Archive yesterday's progress if any
-            if (lastSavedDate.isNotBlank()) {
-                archiveDayCompletion(lastSavedDate)
+        if (isCheckingMidnight) return
+        isCheckingMidnight = true
+        try {
+            val lastSavedDate = prefs.getString("last_active_date", "") ?: ""
+            val today = getTodayDateStr()
+            if (lastSavedDate != today) {
+                // Immediately set today to prevent recursive triggers
+                prefs.edit().putString("last_active_date", today).apply()
+                if (lastSavedDate.isNotBlank()) {
+                    archiveDayCompletion(lastSavedDate)
+                }
+                resetDailyProgress()
             }
-            // Reset daily habit progress
-            resetDailyProgress()
-            prefs.edit().putString("last_active_date", today).apply()
+        } catch (e: Throwable) {
+            android.util.Log.e("HabitsFirst", "Error during checkMidnightReset", e)
+        } finally {
+            isCheckingMidnight = false
         }
     }
 
     private fun resetDailyProgress() {
-        val habits = getAllHabits().map {
+        val habits = loadHabitsFromPrefs().map {
             it.copy(currentValue = 0, isCompletedToday = false)
         }
         saveHabits(habits)
     }
 
     private fun archiveDayCompletion(dateStr: String) {
-        val habits = getAllHabits()
+        val habits = loadHabitsFromPrefs()
         val completed = habits.count { it.isCompletedToday }
         val total = habits.size
         val record = JSONObject().apply {
@@ -181,34 +191,39 @@ class HabitRepository private constructor(context: Context) {
         )
     }
 
+    fun getDefaultBlockRules(): List<BlockRule> {
+        return listOf(
+            BlockRule(
+                id = "rule_social_media",
+                name = "Social & Distracting Apps",
+                blockedPackages = listOf(
+                    "com.instagram.android",
+                    "com.zhiliaoapp.musically",      // TikTok
+                    "com.google.android.youtube",    // YouTube
+                    "com.twitter.android",           // X / Twitter
+                    "com.reddit.frontpage",          // Reddit
+                    "com.facebook.katana",           // Facebook
+                    "com.snapchat.android",          // Snapchat
+                    "com.netflix.mediaclient"        // Netflix
+                ),
+                conditionType = RuleConditionType.ALL_HABITS,
+                requiredHabitIds = listOf("habit_steps", "habit_workout", "habit_meditate"),
+                requiredCount = 2,
+                isEnabled = true,
+                strictMode = false
+            )
+        )
+    }
+
     private fun checkAndInitializeDefaults() {
-        if (!prefs.contains("habits_list")) {
+        val habitsJson = prefs.getString("habits_list", null)
+        if (habitsJson.isNullOrBlank() || habitsJson == "[]") {
             saveHabits(getDefaultHabits())
         }
 
-        if (!prefs.contains("block_rules")) {
-            val defaultRules = listOf(
-                BlockRule(
-                    id = "rule_social_media",
-                    name = "Social & Distracting Apps",
-                    blockedPackages = listOf(
-                        "com.instagram.android",
-                        "com.zhiliaoapp.musically",      // TikTok
-                        "com.google.android.youtube",    // YouTube
-                        "com.twitter.android",           // X / Twitter
-                        "com.reddit.frontpage",          // Reddit
-                        "com.facebook.katana",           // Facebook
-                        "com.snapchat.android",          // Snapchat
-                        "com.netflix.mediaclient"        // Netflix
-                    ),
-                    conditionType = RuleConditionType.ALL_HABITS,
-                    requiredHabitIds = listOf("habit_steps", "habit_workout", "habit_meditate"),
-                    requiredCount = 2,
-                    isEnabled = true,
-                    strictMode = false
-                )
-            )
-            saveBlockRules(defaultRules)
+        val rulesJson = prefs.getString("block_rules", null)
+        if (rulesJson.isNullOrBlank() || rulesJson == "[]") {
+            saveBlockRules(getDefaultBlockRules())
         }
 
         // Purge any fake seeded sample history so users only see their own genuine progress
@@ -223,9 +238,20 @@ class HabitRepository private constructor(context: Context) {
     // --- Habits CRUD ---
 
     fun getAllHabits(): List<Habit> {
-        checkMidnightReset()
+        try {
+            checkMidnightReset()
+        } catch (_: Throwable) {}
+        return loadHabitsFromPrefs()
+    }
+
+    private fun loadHabitsFromPrefs(): List<Habit> {
         return try {
-            val jsonStr = prefs.getString("habits_list", "[]") ?: "[]"
+            val jsonStr = prefs.getString("habits_list", null)
+            if (jsonStr.isNullOrBlank() || jsonStr == "[]") {
+                val defaults = getDefaultHabits()
+                saveHabits(defaults)
+                return defaults
+            }
             val array = JSONArray(jsonStr)
             val list = mutableListOf<Habit>()
             for (i in 0 until array.length()) {
@@ -252,9 +278,17 @@ class HabitRepository private constructor(context: Context) {
                     )
                 )
             }
-            if (list.isEmpty()) getDefaultHabits() else list
+            if (list.isEmpty()) {
+                val defaults = getDefaultHabits()
+                saveHabits(defaults)
+                defaults
+            } else {
+                list
+            }
         } catch (e: Throwable) {
-            getDefaultHabits()
+            val defaults = getDefaultHabits()
+            try { saveHabits(defaults) } catch (_: Throwable) {}
+            defaults
         }
     }
 
@@ -332,7 +366,12 @@ class HabitRepository private constructor(context: Context) {
 
     fun getAllBlockRules(): List<BlockRule> {
         return try {
-            val jsonStr = prefs.getString("block_rules", "[]") ?: "[]"
+            val jsonStr = prefs.getString("block_rules", null)
+            if (jsonStr.isNullOrBlank() || jsonStr == "[]") {
+                val defaults = getDefaultBlockRules()
+                saveBlockRules(defaults)
+                return defaults
+            }
             val array = JSONArray(jsonStr)
             val list = mutableListOf<BlockRule>()
             for (i in 0 until array.length()) {
@@ -371,10 +410,22 @@ class HabitRepository private constructor(context: Context) {
                     )
                 )
             }
-            list
+            if (list.isEmpty()) {
+                val defaults = getDefaultBlockRules()
+                saveBlockRules(defaults)
+                defaults
+            } else {
+                list
+            }
         } catch (e: Throwable) {
-            emptyList()
+            val defaults = getDefaultBlockRules()
+            try { saveBlockRules(defaults) } catch (_: Throwable) {}
+            defaults
         }
+    }
+
+    fun resetDefaultBlockRules() {
+        saveBlockRules(getDefaultBlockRules())
     }
 
     fun getAllBlockedPackages(): List<String> {
