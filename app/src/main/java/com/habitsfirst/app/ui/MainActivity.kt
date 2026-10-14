@@ -96,34 +96,41 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        try {
-            setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_main)
 
+        try {
             repository = HabitRepository.getInstance(this)
+        } catch (t: Throwable) {
+            android.util.Log.e("HabitsFirst", "Error getting HabitRepository in onCreate", t)
+        }
+
+        try {
             usageTracker = UsageTrackerHelper(this)
             stepHelper = StepSensorHelper(this)
+        } catch (t: Throwable) {
+            android.util.Log.e("HabitsFirst", "Error initializing helpers in onCreate", t)
+        }
 
-            initViews()
-            setupAdapters()
-            setupTabs()
-            setupListeners()
-            applySystemInsets()
+        try { initViews() } catch (t: Throwable) { android.util.Log.e("HabitsFirst", "Error in initViews", t) }
+        try { setupAdapters() } catch (t: Throwable) { android.util.Log.e("HabitsFirst", "Error in setupAdapters", t) }
+        try { setupTabs() } catch (t: Throwable) { android.util.Log.e("HabitsFirst", "Error in setupTabs", t) }
+        try { setupListeners() } catch (t: Throwable) { android.util.Log.e("HabitsFirst", "Error in setupListeners", t) }
+        try { applySystemInsets() } catch (_: Throwable) {}
 
-            // Notification channel and daily reminder scheduling
+        try {
             NotificationHelper.createNotificationChannel(this)
-            if (repository.areRemindersEnabled()) {
+            if (::repository.isInitialized && repository.areRemindersEnabled()) {
                 NotificationHelper.scheduleDailyReminders(this)
             }
+        } catch (_: Throwable) {}
 
-            // Request notification permission on Android 13+
+        try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                     requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 101)
                 }
             }
-        } catch (t: Throwable) {
-            android.util.Log.e("HabitsFirst", "Error during MainActivity.onCreate: ${t.message}", t)
-        }
+        } catch (_: Throwable) {}
     }
 
     private fun applySystemInsets() {

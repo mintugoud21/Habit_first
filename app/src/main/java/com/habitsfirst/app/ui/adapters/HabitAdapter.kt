@@ -86,6 +86,11 @@ class HabitAdapter(
             cbComplete.setOnClickListener {
                 onHabitToggle(habit, cbComplete.isChecked)
             }
+            cardView.setOnClickListener {
+                val newState = !cbComplete.isChecked
+                cbComplete.isChecked = newState
+                onHabitToggle(habit, newState)
+            }
 
             when (habit.type) {
                 HabitType.STEP_COUNT -> {

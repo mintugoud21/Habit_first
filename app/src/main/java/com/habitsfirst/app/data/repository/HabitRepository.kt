@@ -22,7 +22,10 @@ class HabitRepository private constructor(context: Context) {
 
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
 
+    private var isInitializing = true
+
     fun notifyWidgetsAndTiles() {
+        if (isInitializing) return
         try {
             com.habitsfirst.app.widget.HabitsAppWidgetProvider.updateAllWidgets(appContext)
             com.habitsfirst.app.service.HabitStatusTileService.requestTileUpdate(appContext)
@@ -38,14 +41,27 @@ class HabitRepository private constructor(context: Context) {
 
         fun getInstance(context: Context): HabitRepository {
             return instance ?: synchronized(this) {
-                instance ?: HabitRepository(context.applicationContext).also { instance = it }
+                if (instance != null) return instance!!
+                val repo = HabitRepository(context.applicationContext)
+                instance = repo
+                repo.onInitComplete()
+                repo
             }
         }
     }
 
     init {
-        checkAndInitializeDefaults()
-        checkMidnightReset()
+        instance = this
+        try {
+            checkAndInitializeDefaults()
+            checkMidnightReset()
+        } catch (e: Throwable) {
+            android.util.Log.e("HabitsFirst", "Error during HabitRepository init", e)
+        }
+    }
+
+    private fun onInitComplete() {
+        isInitializing = false
     }
 
     fun getTodayDateStr(): String = dateFormat.format(Date())
