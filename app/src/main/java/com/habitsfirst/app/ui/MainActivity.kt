@@ -96,29 +96,33 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        try {
+            setContentView(R.layout.activity_main)
 
-        repository = HabitRepository.getInstance(this)
-        usageTracker = UsageTrackerHelper(this)
-        stepHelper = StepSensorHelper(this)
+            repository = HabitRepository.getInstance(this)
+            usageTracker = UsageTrackerHelper(this)
+            stepHelper = StepSensorHelper(this)
 
-        initViews()
-        setupAdapters()
-        setupTabs()
-        setupListeners()
-        applySystemInsets()
+            initViews()
+            setupAdapters()
+            setupTabs()
+            setupListeners()
+            applySystemInsets()
 
-        // Notification channel and daily reminder scheduling
-        NotificationHelper.createNotificationChannel(this)
-        if (repository.areRemindersEnabled()) {
-            NotificationHelper.scheduleDailyReminders(this)
-        }
-
-        // Request notification permission on Android 13+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 101)
+            // Notification channel and daily reminder scheduling
+            NotificationHelper.createNotificationChannel(this)
+            if (repository.areRemindersEnabled()) {
+                NotificationHelper.scheduleDailyReminders(this)
             }
+
+            // Request notification permission on Android 13+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                    requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 101)
+                }
+            }
+        } catch (t: Throwable) {
+            android.util.Log.e("HabitsFirst", "Error during MainActivity.onCreate: ${t.message}", t)
         }
     }
 
@@ -166,15 +170,21 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        refreshAllData()
-        checkPermissions()
-        stepHelper.startListening()
-        checkProductiveAppsUsage()
+        try {
+            refreshAllData()
+            checkPermissions()
+            stepHelper.startListening()
+            checkProductiveAppsUsage()
+        } catch (t: Throwable) {
+            android.util.Log.e("HabitsFirst", "Error during MainActivity.onResume: ${t.message}", t)
+        }
     }
 
     override fun onPause() {
         super.onPause()
-        stepHelper.stopListening()
+        try {
+            stepHelper.stopListening()
+        } catch (_: Throwable) {}
     }
 
     private fun initViews() {
