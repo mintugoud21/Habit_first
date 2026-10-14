@@ -15,24 +15,54 @@
         android:background="@color/bg_dark"
         android:orientation="vertical"
         android:paddingHorizontal="20dp"
-        android:paddingTop="20dp"
-        android:paddingBottom="12dp">
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/app_name"
-            android:textColor="@color/text_primary"
-            android:textSize="26sp"
-            android:textStyle="bold" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:text="@string/app_tagline"
-            android:textColor="@color/primary_emerald"
-            android:textSize="14sp" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_header_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="TODAY"
+                    android:textColor="@color/primary_emerald"
+                    android:textSize="12sp"
+                    android:letterSpacing="0.08"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_header_greeting"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/app_name"
+                    android:textColor="@color/text_primary"
+                    android:textSize="26sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_header_pill"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_pill_badge"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                android:text="Earn Apps Back"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
     </LinearLayout>
 
     <!-- Main Content Frame for Tabs -->
@@ -62,9 +92,9 @@
                     android:layout_marginBottom="12dp"
                     android:visibility="gone"
                     app:cardBackgroundColor="#2D1515"
-                    app:cardCornerRadius="14dp"
+                    app:cardCornerRadius="16dp"
                     app:strokeColor="#7F1D1D"
-                    app:strokeWidth="1dp">
+                    app:strokeWidth="1.2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -98,8 +128,9 @@
                             android:text="Enable in Settings"
                             android:textAllCaps="false"
                             android:textSize="12sp"
+                            android:textStyle="bold"
                             app:backgroundTint="#EF4444"
-                            app:cornerRadius="8dp" />
+                            app:cornerRadius="10dp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -111,9 +142,9 @@
                     android:layout_marginBottom="12dp"
                     android:visibility="gone"
                     app:cardBackgroundColor="#262214"
-                    app:cardCornerRadius="14dp"
+                    app:cardCornerRadius="16dp"
                     app:strokeColor="#78350F"
-                    app:strokeWidth="1dp">
+                    app:strokeWidth="1.2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -147,32 +178,30 @@
                             android:text="Grant Usage Access"
                             android:textAllCaps="false"
                             android:textSize="12sp"
+                            android:textStyle="bold"
                             app:backgroundTint="@color/accent_orange"
-                            app:cornerRadius="8dp" />
+                            app:cornerRadius="10dp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Today Overview Card -->
-                <com.google.android.material.card.MaterialCardView
+                <!-- Modern Today Overview Hero Card -->
+                <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    app:cardBackgroundColor="@color/surface_card"
-                    app:cardCornerRadius="20dp"
-                    app:strokeColor="@color/card_stroke"
-                    app:strokeWidth="1.5dp">
+                    android:layout_marginBottom="20dp"
+                    android:background="@drawable/bg_hero_card"
+                    android:padding="20dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:padding="20dp">
+                        android:orientation="horizontal">
 
                         <com.habitsfirst.app.ui.views.CircularProgressView
                             android:id="@+id/progress_today"
-                            android:layout_width="100dp"
-                            android:layout_height="100dp" />
+                            android:layout_width="104dp"
+                            android:layout_height="104dp" />
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -184,22 +213,33 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:text="Daily Target"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp"
+                                android:letterSpacing="0.05"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
                                 android:text="Today's Habits"
                                 android:textColor="@color/text_primary"
-                                android:textSize="18sp"
+                                android:textSize="20sp"
                                 android:textStyle="bold" />
 
                             <TextView
                                 android:id="@+id/tv_habits_status_summary"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
+                                android:layout_marginTop="6dp"
                                 android:text="Complete habits to unlock your apps."
                                 android:textColor="@color/text_secondary"
-                                android:textSize="13sp" />
+                                android:textSize="13sp"
+                                android:lineSpacingExtra="2dp" />
                         </LinearLayout>
                     </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
+                </FrameLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -336,14 +376,15 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     app:cardBackgroundColor="@color/surface_card"
-                    app:cardCornerRadius="16dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="0dp"
                     app:strokeColor="@color/card_stroke"
                     app:strokeWidth="1.5dp">
 
                     <HorizontalScrollView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="12dp">
+                        android:padding="16dp">
 
                         <com.habitsfirst.app.ui.views.ContributionHeatmapView
                             android:id="@+id/heatmap_view"
@@ -365,7 +406,8 @@
                         android:layout_marginEnd="8dp"
                         android:layout_weight="1"
                         app:cardBackgroundColor="@color/surface_card"
-                        app:cardCornerRadius="16dp"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="0dp"
                         app:strokeColor="@color/card_stroke"
                         app:strokeWidth="1.5dp">
 
@@ -373,24 +415,27 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:padding="16dp">
+                            android:padding="18dp">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="🔥 Current Streak"
+                                android:background="@drawable/bg_pill_badge"
+                                android:paddingHorizontal="10dp"
+                                android:paddingVertical="4dp"
+                                android:text="🔥 Active Streak"
                                 android:textColor="@color/accent_orange"
-                                android:textSize="13sp"
+                                android:textSize="12sp"
                                 android:textStyle="bold" />
 
                             <TextView
                                 android:id="@+id/tv_current_streak"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="6dp"
+                                android:layout_marginTop="10dp"
                                 android:text="14 Days"
                                 android:textColor="@color/text_primary"
-                                android:textSize="22sp"
+                                android:textSize="24sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
@@ -401,7 +446,8 @@
                         android:layout_marginStart="8dp"
                         android:layout_weight="1"
                         app:cardBackgroundColor="@color/surface_card"
-                        app:cardCornerRadius="16dp"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="0dp"
                         app:strokeColor="@color/card_stroke"
                         app:strokeWidth="1.5dp">
 
@@ -409,24 +455,27 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:padding="16dp">
+                            android:padding="18dp">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="⚡ Best Streak"
+                                android:background="@drawable/bg_pill_badge"
+                                android:paddingHorizontal="10dp"
+                                android:paddingVertical="4dp"
+                                android:text="⚡ Personal Best"
                                 android:textColor="@color/primary_emerald"
-                                android:textSize="13sp"
+                                android:textSize="12sp"
                                 android:textStyle="bold" />
 
                             <TextView
                                 android:id="@+id/tv_best_streak"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="6dp"
+                                android:layout_marginTop="10dp"
                                 android:text="32 Days"
                                 android:textColor="@color/text_primary"
-                                android:textSize="22sp"
+                                android:textSize="24sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
@@ -799,10 +848,12 @@
     <LinearLayout
         android:id="@+id/bottom_nav_bar"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:background="@color/surface_card"
+        android:layout_height="68dp"
+        android:background="@drawable/bg_bottom_nav"
+        android:elevation="8dp"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingHorizontal="8dp">
 
         <LinearLayout
             android:id="@+id/tab_btn_habits"
@@ -810,21 +861,27 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
             android:orientation="vertical">
 
             <ImageView
+                android:id="@+id/iv_tab_habits"
                 android:layout_width="22dp"
                 android:layout_height="22dp"
                 android:src="@drawable/ic_check"
                 app:tint="@color/primary_emerald" />
 
             <TextView
+                android:id="@+id/tv_tab_habits"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="3dp"
                 android:text="@string/tab_habits"
-                android:textColor="@color/text_primary"
-                android:textSize="11sp" />
+                android:textColor="@color/primary_emerald"
+                android:textSize="11sp"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <LinearLayout
@@ -833,20 +890,25 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
             android:orientation="vertical">
 
             <ImageView
+                android:id="@+id/iv_tab_blocks"
                 android:layout_width="22dp"
                 android:layout_height="22dp"
                 android:src="@drawable/ic_lock"
-                app:tint="@color/accent_orange" />
+                app:tint="@color/text_secondary" />
 
             <TextView
+                android:id="@+id/tv_tab_blocks"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="3dp"
                 android:text="@string/tab_blocks"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/text_secondary"
                 android:textSize="11sp" />
         </LinearLayout>
 
@@ -856,20 +918,25 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
             android:orientation="vertical">
 
             <ImageView
+                android:id="@+id/iv_tab_streaks"
                 android:layout_width="22dp"
                 android:layout_height="22dp"
                 android:src="@drawable/ic_timer"
-                app:tint="@color/accent_cyan" />
+                app:tint="@color/text_secondary" />
 
             <TextView
+                android:id="@+id/tv_tab_streaks"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="3dp"
                 android:text="@string/tab_streaks"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/text_secondary"
                 android:textSize="11sp" />
         </LinearLayout>
 
@@ -879,20 +946,25 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
             android:orientation="vertical">
 
             <ImageView
+                android:id="@+id/iv_tab_settings"
                 android:layout_width="22dp"
                 android:layout_height="22dp"
                 android:src="@drawable/ic_shield"
                 app:tint="@color/text_secondary" />
 
             <TextView
+                android:id="@+id/tv_tab_settings"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="3dp"
                 android:text="@string/tab_settings"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/text_secondary"
                 android:textSize="11sp" />
         </LinearLayout>
 

@@ -50,7 +50,7 @@ class HabitRepository private constructor(context: Context) {
 
     fun getTodayDateStr(): String = dateFormat.format(Date())
 
-    private fun checkMidnightReset() {
+    fun checkMidnightReset() {
         val lastSavedDate = prefs.getString("last_active_date", "") ?: ""
         val today = getTodayDateStr()
         if (lastSavedDate != today) {
@@ -226,6 +226,7 @@ class HabitRepository private constructor(context: Context) {
     // --- Habits CRUD ---
 
     fun getAllHabits(): List<Habit> {
+        checkMidnightReset()
         val jsonStr = prefs.getString("habits_list", "[]") ?: "[]"
         val array = JSONArray(jsonStr)
         val list = mutableListOf<Habit>()

@@ -80,6 +80,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnTabStreaks: View
     private lateinit var btnTabSettings: View
 
+    private lateinit var ivTabHabits: ImageView
+    private lateinit var ivTabBlocks: ImageView
+    private lateinit var ivTabStreaks: ImageView
+    private lateinit var ivTabSettings: ImageView
+
+    private lateinit var tvTabHabits: TextView
+    private lateinit var tvTabBlocks: TextView
+    private lateinit var tvTabStreaks: TextView
+    private lateinit var tvTabSettings: TextView
+
     // Permission cards
     private lateinit var cardAccessibilityNotice: MaterialCardView
     private lateinit var cardUsageNotice: MaterialCardView
@@ -183,6 +193,20 @@ class MainActivity : AppCompatActivity() {
         btnTabStreaks = findViewById(R.id.tab_btn_streaks)
         btnTabSettings = findViewById(R.id.tab_btn_settings)
 
+        ivTabHabits = findViewById(R.id.iv_tab_habits)
+        ivTabBlocks = findViewById(R.id.iv_tab_blocks)
+        ivTabStreaks = findViewById(R.id.iv_tab_streaks)
+        ivTabSettings = findViewById(R.id.iv_tab_settings)
+
+        tvTabHabits = findViewById(R.id.tv_tab_habits)
+        tvTabBlocks = findViewById(R.id.tv_tab_blocks)
+        tvTabStreaks = findViewById(R.id.tv_tab_streaks)
+        tvTabSettings = findViewById(R.id.tv_tab_settings)
+
+        // Set modern header date
+        val dateFormatHeader = java.text.SimpleDateFormat("EEEE, MMM d", java.util.Locale.getDefault())
+        findViewById<TextView>(R.id.tv_header_date)?.text = dateFormatHeader.format(java.util.Date()).uppercase()
+
         cardAccessibilityNotice = findViewById(R.id.card_accessibility_notice)
         cardUsageNotice = findViewById(R.id.card_usage_notice)
     }
@@ -241,11 +265,32 @@ class MainActivity : AppCompatActivity() {
         layoutStreaksTab.visibility = if (index == 2) View.VISIBLE else View.GONE
         layoutSettingsTab.visibility = if (index == 3) View.VISIBLE else View.GONE
 
-        // Dim inactive tabs
-        btnTabHabits.alpha = if (index == 0) 1.0f else 0.45f
-        btnTabBlocks.alpha = if (index == 1) 1.0f else 0.45f
-        btnTabStreaks.alpha = if (index == 2) 1.0f else 0.45f
-        btnTabSettings.alpha = if (index == 3) 1.0f else 0.45f
+        val colorActive = androidx.core.content.ContextCompat.getColor(this, R.color.primary_emerald)
+        val colorInactive = androidx.core.content.ContextCompat.getColor(this, R.color.text_secondary)
+
+        // Tab 0
+        ivTabHabits.setColorFilter(if (index == 0) colorActive else colorInactive)
+        tvTabHabits.setTextColor(if (index == 0) colorActive else colorInactive)
+        tvTabHabits.typeface = if (index == 0) android.graphics.Typeface.DEFAULT_BOLD else android.graphics.Typeface.DEFAULT
+        btnTabHabits.setBackgroundResource(if (index == 0) R.drawable.bg_nav_item_selected else 0)
+
+        // Tab 1
+        ivTabBlocks.setColorFilter(if (index == 1) colorActive else colorInactive)
+        tvTabBlocks.setTextColor(if (index == 1) colorActive else colorInactive)
+        tvTabBlocks.typeface = if (index == 1) android.graphics.Typeface.DEFAULT_BOLD else android.graphics.Typeface.DEFAULT
+        btnTabBlocks.setBackgroundResource(if (index == 1) R.drawable.bg_nav_item_selected else 0)
+
+        // Tab 2
+        ivTabStreaks.setColorFilter(if (index == 2) colorActive else colorInactive)
+        tvTabStreaks.setTextColor(if (index == 2) colorActive else colorInactive)
+        tvTabStreaks.typeface = if (index == 2) android.graphics.Typeface.DEFAULT_BOLD else android.graphics.Typeface.DEFAULT
+        btnTabStreaks.setBackgroundResource(if (index == 2) R.drawable.bg_nav_item_selected else 0)
+
+        // Tab 3
+        ivTabSettings.setColorFilter(if (index == 3) colorActive else colorInactive)
+        tvTabSettings.setTextColor(if (index == 3) colorActive else colorInactive)
+        tvTabSettings.typeface = if (index == 3) android.graphics.Typeface.DEFAULT_BOLD else android.graphics.Typeface.DEFAULT
+        btnTabSettings.setBackgroundResource(if (index == 3) R.drawable.bg_nav_item_selected else 0)
     }
 
     private fun setupListeners() {
@@ -346,8 +391,9 @@ class MainActivity : AppCompatActivity() {
         for (habit in habits) {
             val pkg = habit.targetPackageName ?: continue
             val minutesToday = usageTracker.getMinutesUsedToday(pkg)
-            if (minutesToday > habit.currentValue) {
-                repository.updateHabitProgress(habit.id, minutesToday - habit.currentValue)
+            if (habit.currentValue != minutesToday) {
+                val isCompleted = minutesToday >= habit.targetValue
+                repository.updateHabit(habit.copy(currentValue = minutesToday, isCompletedToday = isCompleted))
             }
         }
     }

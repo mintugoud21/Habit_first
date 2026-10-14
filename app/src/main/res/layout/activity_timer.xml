@@ -20,20 +20,24 @@
         android:layout_height="wrap_content"
         android:text="Meditate 10 minutes"
         android:textColor="@color/text_primary"
-        android:textSize="22sp"
+        android:textSize="24sp"
         android:textStyle="bold" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="6dp"
+        android:background="@drawable/bg_pill_badge"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="5dp"
         android:text="Focus &amp; breathe. Apps unlock when completed."
         android:textColor="@color/text_secondary"
-        android:textSize="14sp" />
+        android:textSize="13sp"
+        android:textStyle="bold" />
 
     <FrameLayout
-        android:layout_width="220dp"
-        android:layout_height="220dp"
+        android:layout_width="230dp"
+        android:layout_height="230dp"
         android:layout_marginTop="36dp">
 
         <com.habitsfirst.app.ui.views.CircularProgressView
@@ -48,7 +52,7 @@
             android:layout_gravity="center"
             android:text="10:00"
             android:textColor="@color/text_primary"
-            android:textSize="36sp"
+            android:textSize="38sp"
             android:textStyle="bold"
             android:visibility="gone" />
     </FrameLayout>
@@ -66,8 +70,9 @@
         android:textAllCaps="false"
         android:textColor="@color/white"
         android:textSize="16sp"
+        android:textStyle="bold"
         app:backgroundTint="@color/primary_emerald"
-        app:cornerRadius="14dp" />
+        app:cornerRadius="16dp" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_timer_cancel"

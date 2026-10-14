@@ -44,9 +44,9 @@ class StepSensorHelper(private val context: Context) : SensorEventListener {
         val todaySteps = (totalStepsSinceBoot - initialStepOffset).coerceAtLeast(0)
         val repository = HabitRepository.getInstance(context)
         val habit = repository.getAllHabits().firstOrNull { it.id == "habit_steps" }
-        if (habit != null && todaySteps > habit.currentValue) {
-            val delta = todaySteps - habit.currentValue
-            repository.updateHabitProgress("habit_steps", delta)
+        if (habit != null && habit.currentValue != todaySteps) {
+            val isCompleted = todaySteps >= habit.targetValue
+            repository.updateHabit(habit.copy(currentValue = todaySteps, isCompletedToday = isCompleted))
         }
     }
 

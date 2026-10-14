@@ -13,30 +13,42 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.4" />
+        android:layout_weight="0.3" />
 
-    <!-- App Icon & Lock Badge -->
+    <!-- Modern App Icon & Lock Badge Card -->
     <FrameLayout
-        android:layout_width="88dp"
-        android:layout_height="88dp"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
         android:layout_gravity="center_horizontal">
 
-        <ImageView
-            android:id="@+id/iv_blocked_app_icon"
-            android:layout_width="72dp"
-            android:layout_height="72dp"
+        <FrameLayout
+            android:layout_width="84dp"
+            android:layout_height="84dp"
             android:layout_gravity="center"
-            android:src="@drawable/ic_lock"
-            app:tint="@color/text_secondary" />
+            android:background="@drawable/bg_pill_badge">
 
-        <ImageView
-            android:layout_width="28dp"
-            android:layout_height="28dp"
+            <ImageView
+                android:id="@+id/iv_blocked_app_icon"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_lock"
+                app:tint="@color/text_secondary" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:layout_gravity="bottom|end"
-            android:background="@drawable/item_edittext_bg"
-            android:padding="5dp"
-            android:src="@drawable/ic_lock"
-            app:tint="@color/accent_orange" />
+            android:background="@drawable/habit_icon_bg">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_lock"
+                app:tint="@color/accent_orange" />
+        </FrameLayout>
     </FrameLayout>
 
     <!-- Main Message -->
@@ -45,14 +57,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
+        android:background="@drawable/bg_pill_badge"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="4dp"
         android:text="App is locked"
-        android:textColor="@color/text_secondary"
-        android:textSize="15sp" />
+        android:textColor="@color/accent_orange"
+        android:textSize="13sp"
+        android:textStyle="bold" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="8dp"
         android:text="Do the thing, then scroll."
         android:textColor="@color/text_primary"
         android:textSize="24sp"
@@ -91,8 +107,9 @@
         android:textAllCaps="false"
         android:textColor="@color/white"
         android:textSize="15sp"
+        android:textStyle="bold"
         app:backgroundTint="@color/primary_emerald"
-        app:cornerRadius="14dp" />
+        app:cornerRadius="16dp" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_emergency_snooze"
