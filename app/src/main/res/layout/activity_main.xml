@@ -56,10 +56,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_pill_badge"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="6dp"
-                android:text="Earn Apps Back"
-                android:textColor="@color/text_secondary"
+                android:text="💡 Earn Apps Back"
+                android:textColor="@color/primary_emerald"
                 android:textSize="12sp"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -433,7 +436,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="10dp"
-                                android:text="14 Days"
+                                android:text="0 Days"
                                 android:textColor="@color/text_primary"
                                 android:textSize="24sp"
                                 android:textStyle="bold" />
@@ -473,7 +476,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="10dp"
-                                android:text="32 Days"
+                                android:text="0 Days"
                                 android:textColor="@color/text_primary"
                                 android:textSize="24sp"
                                 android:textStyle="bold" />
@@ -481,6 +484,42 @@
                     </com.google.android.material.card.MaterialCardView>
 
                 </LinearLayout>
+
+                <!-- Streak & Heatmap Tracking Guide -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:cardBackgroundColor="@color/surface_card"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/card_stroke"
+                    app:strokeWidth="1.5dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="18dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📊 How Streaks Work"
+                            android:textColor="@color/text_primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:lineSpacingExtra="3dp"
+                            android:text="• 🟢 Green Squares: Days where you completed your daily habits.\n• ⬛ Slate Squares: Days with no habit activity or past inactive days.\n• 🔥 Streak Count: Increments every consecutive day you complete your habits.\n• ⏳ Midnight Protection: Complete today's habits before 11:59 PM to protect and build your streak!"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
@@ -802,6 +841,17 @@
                                 app:cornerRadius="8dp"
                                 app:strokeColor="@color/accent_blue" />
                         </LinearLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_reset_history"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="36dp"
+                            android:layout_marginTop="8dp"
+                            android:text="Clear Streak &amp; History Data"
+                            android:textAllCaps="false"
+                            android:textColor="@color/accent_red"
+                            android:textSize="12sp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 

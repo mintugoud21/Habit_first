@@ -195,32 +195,13 @@ class HabitRepository private constructor(context: Context) {
             saveBlockRules(defaultRules)
         }
 
-        // Seed some history for the yearly heatmap if empty
-        if (!prefs.contains("history_log")) {
-            seedSampleHistory()
+        // Purge any fake seeded sample history so users only see their own genuine progress
+        if (!prefs.getBoolean("history_sample_purged_v2", false)) {
+            prefs.edit()
+                .putString("history_log", "[]")
+                .putBoolean("history_sample_purged_v2", true)
+                .apply()
         }
-    }
-
-    private fun seedSampleHistory() {
-        val array = JSONArray()
-        val calendar = Calendar.getInstance()
-        val random = kotlin.random.Random(42)
-
-        for (i in 60 downTo 1) {
-            calendar.time = Date()
-            calendar.add(Calendar.DAY_OF_YEAR, -i)
-            val dStr = dateFormat.format(calendar.time)
-            val total = 6
-            val completed = (1..6).random(random)
-            val obj = JSONObject().apply {
-                put("date", dStr)
-                put("completed", completed)
-                put("total", total)
-                put("goalMet", completed >= 3)
-            }
-            array.put(obj)
-        }
-        prefs.edit().putString("history_log", array.toString()).apply()
     }
 
     // --- Habits CRUD ---
@@ -476,10 +457,10 @@ class HabitRepository private constructor(context: Context) {
 
     fun getHistoryCompletions(): List<DailyCompletion> {
         val jsonStr = prefs.getString("history_log", "[]") ?: "[]"
-        val array = JSONArray(jsonStr)
+        val array = try { JSONArray(jsonStr) } catch (_: Throwable) { JSONArray() }
         val list = mutableListOf<DailyCompletion>()
         for (i in 0 until array.length()) {
-            val obj = array.getJSONObject(i)
+            val obj = array.optJSONObject(i) ?: continue
             list.add(
                 DailyCompletion(
                     dateStr = obj.getString("date"),
@@ -490,30 +471,48 @@ class HabitRepository private constructor(context: Context) {
             )
         }
 
-        // Add today's live completion as well
+        // Add today's live completion without duplicating
+        val todayStr = getTodayDateStr()
+        list.removeAll { it.dateStr == todayStr }
+
         val todayHabits = getAllHabits()
         val todayCompleted = todayHabits.count { it.isCompletedToday }
+        val isGoalMetToday = todayCompleted > 0 && todayCompleted >= (todayHabits.size / 2).coerceAtLeast(1)
+
         list.add(
             DailyCompletion(
-                dateStr = getTodayDateStr(),
+                dateStr = todayStr,
                 completedCount = todayCompleted,
                 totalCount = todayHabits.size,
-                isGoalMet = todayCompleted >= (todayHabits.size / 2).coerceAtLeast(1)
+                isGoalMet = isGoalMetToday
             )
         )
 
         return list.sortedBy { it.dateStr }
     }
 
+    fun clearStreakAndHistory() {
+        prefs.edit()
+            .putString("history_log", "[]")
+            .remove("last_active_date")
+            .apply()
+        notifyWidgetsAndTiles()
+    }
+
     fun getCurrentStreak(): Int {
         val history = getHistoryCompletions()
+        val todayStr = getTodayDateStr()
         var streak = 0
+
+        // Count consecutive completed days from yesterday backwards.
+        // Today is excluded from the streak calculation since the day is not yet over.
         for (i in history.indices.reversed()) {
-            if (history[i].isGoalMet) {
-                streak++
-            } else if (i == history.lastIndex) {
-                // Today isn't finished yet, don't break streak if yesterday was met
+            val item = history[i]
+            if (item.dateStr == todayStr) {
                 continue
+            }
+            if (item.isGoalMet) {
+                streak++
             } else {
                 break
             }

@@ -77,20 +77,26 @@ class ContributionHeatmapView @JvmOverloads constructor(
         val startX = 50f
         val startY = 30f
 
-        // Draw cells backwards from today
+        val cal = Calendar.getInstance()
+        cal.time = today
+        // Day of week with Monday = 0, Tuesday = 1, ... Sunday = 6
+        val todayDow = (cal.get(Calendar.DAY_OF_WEEK) + 5) % 7
+
+        // Draw cells ending at today's day of week in the current week
         for (week in 0 until numWeeks) {
-            val weekOffset = (numWeeks - 1) - week
+            val weeksAgo = (numWeeks - 1) - week
             for (day in 0 until daysPerWeek) {
-                val dayOffset = (weekOffset * 7) + (6 - day)
+                val daysDiff = (weeksAgo * 7) + (todayDow - day)
+                val isFuture = daysDiff < 0
 
                 calendar.time = today
-                calendar.add(Calendar.DAY_OF_YEAR, -dayOffset)
+                calendar.add(Calendar.DAY_OF_YEAR, -daysDiff)
                 val dateStr = dateFormat.format(calendar.time)
 
                 val completion = completionsMap[dateStr]
-                val ratio = completion?.completionRatio ?: 0f
+                val ratio = if (isFuture) 0f else (completion?.completionRatio ?: 0f)
 
-                cellPaint.color = getColorForRatio(ratio, calendar.time > today)
+                cellPaint.color = getColorForRatio(ratio, isFuture)
 
                 val left = startX + week * (cellSize + cellSpacing)
                 val top = startY + day * (cellSize + cellSpacing)

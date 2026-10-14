@@ -351,6 +351,16 @@ class MainActivity : AppCompatActivity() {
         findViewById<MaterialButton>(R.id.btn_import_backup).setOnClickListener {
             showImportBackupDialog()
         }
+
+        // Earn Apps Back Explainer Pill
+        findViewById<View>(R.id.tv_header_pill).setOnClickListener {
+            showEarnAppsBackExplainerDialog()
+        }
+
+        // Reset History and Streak Data
+        findViewById<MaterialButton>(R.id.btn_reset_history).setOnClickListener {
+            showResetHistoryConfirmation()
+        }
     }
 
     private fun refreshAllData() {
@@ -656,6 +666,47 @@ class MainActivity : AppCompatActivity() {
                 repository.resetDefaultHabits()
                 refreshAllData()
                 Toast.makeText(this, "Default habits restored", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showEarnAppsBackExplainerDialog() {
+        try {
+            val dialogView = layoutInflater.inflate(R.layout.dialog_earn_apps_back, null)
+            val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_HabitsFirst_Dialog)
+                .setView(dialogView)
+                .create()
+
+            dialogView.findViewById<MaterialButton>(R.id.btn_dialog_view_blocks).setOnClickListener {
+                dialog.dismiss()
+                selectTab(1) // Switch to Blocks tab
+            }
+
+            dialogView.findViewById<MaterialButton>(R.id.btn_dialog_got_it).setOnClickListener {
+                dialog.dismiss()
+            }
+
+            dialog.show()
+        } catch (e: Throwable) {
+            // Fallback standard alert dialog if custom inflation fails
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle("💡 Earn Apps Back")
+                .setMessage("Habits First locks distracting apps (like social media & games) until you complete your daily habits. Finish your habits to earn your apps back for the day!")
+                .setPositiveButton("View Blocks") { _, _ -> selectTab(1) }
+                .setNegativeButton("Got it", null)
+                .show()
+        }
+    }
+
+    private fun showResetHistoryConfirmation() {
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle("Clear Streak & History Data")
+            .setMessage("Are you sure you want to clear your completion history and reset all streaks to 0? This cannot be undone.")
+            .setPositiveButton("Clear Data") { _, _ ->
+                repository.clearStreakAndHistory()
+                refreshAllData()
+                Toast.makeText(this, "Streak and history data cleared", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Cancel", null)
             .show()
