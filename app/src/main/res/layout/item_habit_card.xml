@@ -86,7 +86,7 @@
                 android:layout_weight="1"
                 android:max="100"
                 android:progress="45"
-                android:progressDrawable="@drawable/progress_habit_horizontal" />
+                android:progressTint="@color/primary_emerald" />
 
             <TextView
                 android:id="@+id/tv_progress_label"

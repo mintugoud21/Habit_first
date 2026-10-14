@@ -227,29 +227,38 @@ class HabitRepository private constructor(context: Context) {
 
     fun getAllHabits(): List<Habit> {
         checkMidnightReset()
-        val jsonStr = prefs.getString("habits_list", "[]") ?: "[]"
-        val array = JSONArray(jsonStr)
-        val list = mutableListOf<Habit>()
-        for (i in 0 until array.length()) {
-            val obj = array.getJSONObject(i)
-            list.add(
-                Habit(
-                    id = obj.getString("id"),
-                    title = obj.getString("title"),
-                    description = obj.optString("description", ""),
-                    type = HabitType.valueOf(obj.getString("type")),
-                    targetValue = obj.getInt("targetValue"),
-                    currentValue = obj.optInt("currentValue", 0),
-                    unit = obj.optString("unit", ""),
-                    targetPackageName = if (obj.has("targetPackageName")) obj.getString("targetPackageName") else null,
-                    iconName = obj.optString("iconName", "ic_check"),
-                    colorHex = obj.optString("colorHex", "#10B981"),
-                    isCompletedToday = obj.optBoolean("isCompletedToday", false),
-                    isBuiltIn = obj.optBoolean("isBuiltIn", false)
+        return try {
+            val jsonStr = prefs.getString("habits_list", "[]") ?: "[]"
+            val array = JSONArray(jsonStr)
+            val list = mutableListOf<Habit>()
+            for (i in 0 until array.length()) {
+                val obj = array.getJSONObject(i)
+                val type = try {
+                    HabitType.valueOf(obj.getString("type"))
+                } catch (e: Throwable) {
+                    HabitType.MANUAL_CHECK
+                }
+                list.add(
+                    Habit(
+                        id = obj.getString("id"),
+                        title = obj.getString("title"),
+                        description = obj.optString("description", ""),
+                        type = type,
+                        targetValue = obj.optInt("targetValue", 1),
+                        currentValue = obj.optInt("currentValue", 0),
+                        unit = obj.optString("unit", ""),
+                        targetPackageName = if (obj.has("targetPackageName")) obj.getString("targetPackageName") else null,
+                        iconName = obj.optString("iconName", "ic_check"),
+                        colorHex = obj.optString("colorHex", "#10B981"),
+                        isCompletedToday = obj.optBoolean("isCompletedToday", false),
+                        isBuiltIn = obj.optBoolean("isBuiltIn", false)
+                    )
                 )
-            )
+            }
+            if (list.isEmpty()) getDefaultHabits() else list
+        } catch (e: Throwable) {
+            getDefaultHabits()
         }
-        return list
     }
 
     fun saveHabits(habits: List<Habit>) {
@@ -325,40 +334,50 @@ class HabitRepository private constructor(context: Context) {
     // --- Block Rules CRUD ---
 
     fun getAllBlockRules(): List<BlockRule> {
-        val jsonStr = prefs.getString("block_rules", "[]") ?: "[]"
-        val array = JSONArray(jsonStr)
-        val list = mutableListOf<BlockRule>()
-        for (i in 0 until array.length()) {
-            val obj = array.getJSONObject(i)
-            val pkgsArray = obj.optJSONArray("blockedPackages") ?: JSONArray()
-            val pkgs = mutableListOf<String>()
-            for (p in 0 until pkgsArray.length()) {
-                val pkgName = pkgsArray.getString(p)
-                if (!com.habitsfirst.app.util.PaymentSafetyHelper.isExemptFromBlocking(pkgName)) {
-                    pkgs.add(pkgName)
+        return try {
+            val jsonStr = prefs.getString("block_rules", "[]") ?: "[]"
+            val array = JSONArray(jsonStr)
+            val list = mutableListOf<BlockRule>()
+            for (i in 0 until array.length()) {
+                val obj = array.getJSONObject(i)
+                val pkgsArray = obj.optJSONArray("blockedPackages") ?: JSONArray()
+                val pkgs = mutableListOf<String>()
+                for (p in 0 until pkgsArray.length()) {
+                    val pkgName = pkgsArray.getString(p)
+                    if (!com.habitsfirst.app.util.PaymentSafetyHelper.isExemptFromBlocking(pkgName)) {
+                        pkgs.add(pkgName)
+                    }
                 }
-            }
 
-            val habitsArray = obj.optJSONArray("requiredHabitIds") ?: JSONArray()
-            val reqHabits = mutableListOf<String>()
-            for (h in 0 until habitsArray.length()) reqHabits.add(habitsArray.getString(h))
+                val habitsArray = obj.optJSONArray("requiredHabitIds") ?: JSONArray()
+                val reqHabits = mutableListOf<String>()
+                for (h in 0 until habitsArray.length()) reqHabits.add(habitsArray.getString(h))
 
-            list.add(
-                BlockRule(
-                    id = obj.getString("id"),
-                    name = obj.getString("name"),
-                    blockedPackages = pkgs,
-                    conditionType = RuleConditionType.valueOf(obj.optString("conditionType", "ALL_HABITS")),
-                    requiredHabitIds = reqHabits,
-                    requiredCount = obj.optInt("requiredCount", 1),
-                    isEnabled = obj.optBoolean("isEnabled", true),
-                    strictMode = obj.optBoolean("strictMode", false),
-                    startTime = if (obj.has("startTime")) obj.getString("startTime") else null,
-                    endTime = if (obj.has("endTime")) obj.getString("endTime") else null
+                val conditionType = try {
+                    RuleConditionType.valueOf(obj.optString("conditionType", "ALL_HABITS"))
+                } catch (e: Throwable) {
+                    RuleConditionType.ALL_HABITS
+                }
+
+                list.add(
+                    BlockRule(
+                        id = obj.getString("id"),
+                        name = obj.getString("name"),
+                        blockedPackages = pkgs,
+                        conditionType = conditionType,
+                        requiredHabitIds = reqHabits,
+                        requiredCount = obj.optInt("requiredCount", 1),
+                        isEnabled = obj.optBoolean("isEnabled", true),
+                        strictMode = obj.optBoolean("strictMode", false),
+                        startTime = if (obj.has("startTime")) obj.getString("startTime") else null,
+                        endTime = if (obj.has("endTime")) obj.getString("endTime") else null
+                    )
                 )
-            )
+            }
+            list
+        } catch (e: Throwable) {
+            emptyList()
         }
-        return list
     }
 
     fun getAllBlockedPackages(): List<String> {

@@ -36,83 +36,87 @@ object NotificationHelper {
     }
 
     fun scheduleDailyReminders(context: Context) {
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
+        try {
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
 
-        // Schedule Morning Alarm (8:00 AM)
-        val morningIntent = Intent(context, DailyReminderReceiver::class.java).apply {
-            action = DailyReminderReceiver.ACTION_MORNING_REMINDER
-        }
-        val morningPending = PendingIntent.getBroadcast(
-            context,
-            1,
-            morningIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        val morningCal = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 8)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            if (timeInMillis <= System.currentTimeMillis()) {
-                add(Calendar.DAY_OF_YEAR, 1)
+            // Schedule Morning Alarm (8:00 AM)
+            val morningIntent = Intent(context, DailyReminderReceiver::class.java).apply {
+                action = DailyReminderReceiver.ACTION_MORNING_REMINDER
             }
-        }
-        alarmManager.setInexactRepeating(
-            AlarmManager.RTC_WAKEUP,
-            morningCal.timeInMillis,
-            AlarmManager.INTERVAL_DAY,
-            morningPending
-        )
+            val morningPending = PendingIntent.getBroadcast(
+                context,
+                1,
+                morningIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            val morningCal = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 8)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                if (timeInMillis <= System.currentTimeMillis()) {
+                    add(Calendar.DAY_OF_YEAR, 1)
+                }
+            }
+            alarmManager.setInexactRepeating(
+                AlarmManager.RTC_WAKEUP,
+                morningCal.timeInMillis,
+                AlarmManager.INTERVAL_DAY,
+                morningPending
+            )
 
-        // Schedule Evening Alarm (8:00 PM)
-        val eveningIntent = Intent(context, DailyReminderReceiver::class.java).apply {
-            action = DailyReminderReceiver.ACTION_EVENING_REMINDER
-        }
-        val eveningPending = PendingIntent.getBroadcast(
-            context,
-            2,
-            eveningIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        val eveningCal = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 20)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            if (timeInMillis <= System.currentTimeMillis()) {
-                add(Calendar.DAY_OF_YEAR, 1)
+            // Schedule Evening Alarm (8:00 PM)
+            val eveningIntent = Intent(context, DailyReminderReceiver::class.java).apply {
+                action = DailyReminderReceiver.ACTION_EVENING_REMINDER
             }
-        }
-        alarmManager.setInexactRepeating(
-            AlarmManager.RTC_WAKEUP,
-            eveningCal.timeInMillis,
-            AlarmManager.INTERVAL_DAY,
-            eveningPending
-        )
+            val eveningPending = PendingIntent.getBroadcast(
+                context,
+                2,
+                eveningIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            val eveningCal = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 20)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                if (timeInMillis <= System.currentTimeMillis()) {
+                    add(Calendar.DAY_OF_YEAR, 1)
+                }
+            }
+            alarmManager.setInexactRepeating(
+                AlarmManager.RTC_WAKEUP,
+                eveningCal.timeInMillis,
+                AlarmManager.INTERVAL_DAY,
+                eveningPending
+            )
+        } catch (_: Throwable) {}
     }
 
     fun cancelDailyReminders(context: Context) {
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
+        try {
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
 
-        val morningIntent = Intent(context, DailyReminderReceiver::class.java).apply {
-            action = DailyReminderReceiver.ACTION_MORNING_REMINDER
-        }
-        val morningPending = PendingIntent.getBroadcast(
-            context,
-            1,
-            morningIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        alarmManager.cancel(morningPending)
+            val morningIntent = Intent(context, DailyReminderReceiver::class.java).apply {
+                action = DailyReminderReceiver.ACTION_MORNING_REMINDER
+            }
+            val morningPending = PendingIntent.getBroadcast(
+                context,
+                1,
+                morningIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            alarmManager.cancel(morningPending)
 
-        val eveningIntent = Intent(context, DailyReminderReceiver::class.java).apply {
-            action = DailyReminderReceiver.ACTION_EVENING_REMINDER
-        }
-        val eveningPending = PendingIntent.getBroadcast(
-            context,
-            2,
-            eveningIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        alarmManager.cancel(eveningPending)
+            val eveningIntent = Intent(context, DailyReminderReceiver::class.java).apply {
+                action = DailyReminderReceiver.ACTION_EVENING_REMINDER
+            }
+            val eveningPending = PendingIntent.getBroadcast(
+                context,
+                2,
+                eveningIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            alarmManager.cancel(eveningPending)
+        } catch (_: Throwable) {}
     }
 
     fun showMorningReminder(context: Context) {

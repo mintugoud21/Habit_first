@@ -123,38 +123,45 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun applySystemInsets() {
-        val rootLayout = findViewById<View>(R.id.main_root_layout)
-        val topAppBar = findViewById<View>(R.id.top_app_bar)
-        val bottomNavBar = findViewById<View>(R.id.bottom_nav_bar)
+        try {
+            val rootLayout = findViewById<View>(R.id.main_root_layout) ?: return
+            val topAppBar = findViewById<View>(R.id.top_app_bar)
+            val bottomNavBar = findViewById<View>(R.id.bottom_nav_bar)
 
-        val topPaddingOriginal = topAppBar.paddingTop
-        val bottomPaddingOriginal = bottomNavBar.paddingBottom
+            val topPaddingOriginal = topAppBar?.paddingTop ?: 0
+            val bottomPaddingOriginal = bottomNavBar?.paddingBottom ?: 0
 
-        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(rootLayout) { _, insets ->
-            val statusBars = insets.getInsets(
-                androidx.core.view.WindowInsetsCompat.Type.statusBars() or
-                androidx.core.view.WindowInsetsCompat.Type.displayCutout()
-            )
-            val navBars = insets.getInsets(
-                androidx.core.view.WindowInsetsCompat.Type.navigationBars()
-            )
+            androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(rootLayout) { _, insets ->
+                try {
+                    val statusBars = insets.getInsets(
+                        androidx.core.view.WindowInsetsCompat.Type.statusBars() or
+                        androidx.core.view.WindowInsetsCompat.Type.displayCutout()
+                    )
+                    val navBars = insets.getInsets(
+                        androidx.core.view.WindowInsetsCompat.Type.navigationBars()
+                    )
 
-            topAppBar.setPadding(
-                topAppBar.paddingLeft,
-                topPaddingOriginal + statusBars.top,
-                topAppBar.paddingRight,
-                topAppBar.paddingBottom
-            )
+                    topAppBar?.let {
+                        it.setPadding(
+                            it.paddingLeft,
+                            topPaddingOriginal + statusBars.top,
+                            it.paddingRight,
+                            it.paddingBottom
+                        )
+                    }
 
-            bottomNavBar.setPadding(
-                bottomNavBar.paddingLeft,
-                bottomNavBar.paddingTop,
-                bottomNavBar.paddingRight,
-                bottomPaddingOriginal + navBars.bottom
-            )
-
-            insets
-        }
+                    bottomNavBar?.let {
+                        it.setPadding(
+                            it.paddingLeft,
+                            it.paddingTop,
+                            it.paddingRight,
+                            bottomPaddingOriginal + navBars.bottom
+                        )
+                    }
+                } catch (_: Throwable) {}
+                insets
+            }
+        } catch (_: Throwable) {}
     }
 
     override fun onResume() {
@@ -268,29 +275,31 @@ class MainActivity : AppCompatActivity() {
         val colorActive = androidx.core.content.ContextCompat.getColor(this, R.color.primary_emerald)
         val colorInactive = androidx.core.content.ContextCompat.getColor(this, R.color.text_secondary)
 
+        // Dim inactive tabs
+        btnTabHabits.alpha = if (index == 0) 1.0f else 0.55f
+        btnTabBlocks.alpha = if (index == 1) 1.0f else 0.55f
+        btnTabStreaks.alpha = if (index == 2) 1.0f else 0.55f
+        btnTabSettings.alpha = if (index == 3) 1.0f else 0.55f
+
         // Tab 0
         ivTabHabits.setColorFilter(if (index == 0) colorActive else colorInactive)
         tvTabHabits.setTextColor(if (index == 0) colorActive else colorInactive)
         tvTabHabits.typeface = if (index == 0) android.graphics.Typeface.DEFAULT_BOLD else android.graphics.Typeface.DEFAULT
-        btnTabHabits.setBackgroundResource(if (index == 0) R.drawable.bg_nav_item_selected else 0)
 
         // Tab 1
         ivTabBlocks.setColorFilter(if (index == 1) colorActive else colorInactive)
         tvTabBlocks.setTextColor(if (index == 1) colorActive else colorInactive)
         tvTabBlocks.typeface = if (index == 1) android.graphics.Typeface.DEFAULT_BOLD else android.graphics.Typeface.DEFAULT
-        btnTabBlocks.setBackgroundResource(if (index == 1) R.drawable.bg_nav_item_selected else 0)
 
         // Tab 2
         ivTabStreaks.setColorFilter(if (index == 2) colorActive else colorInactive)
         tvTabStreaks.setTextColor(if (index == 2) colorActive else colorInactive)
         tvTabStreaks.typeface = if (index == 2) android.graphics.Typeface.DEFAULT_BOLD else android.graphics.Typeface.DEFAULT
-        btnTabStreaks.setBackgroundResource(if (index == 2) R.drawable.bg_nav_item_selected else 0)
 
         // Tab 3
         ivTabSettings.setColorFilter(if (index == 3) colorActive else colorInactive)
         tvTabSettings.setTextColor(if (index == 3) colorActive else colorInactive)
         tvTabSettings.typeface = if (index == 3) android.graphics.Typeface.DEFAULT_BOLD else android.graphics.Typeface.DEFAULT
-        btnTabSettings.setBackgroundResource(if (index == 3) R.drawable.bg_nav_item_selected else 0)
     }
 
     private fun setupListeners() {
@@ -345,57 +354,69 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun refreshAllData() {
-        val habits = repository.getAllHabits()
-        val completedCount = habits.count { it.isCompletedToday }
-        val totalCount = habits.size
-        val fraction = if (totalCount > 0) completedCount.toFloat() / totalCount.toFloat() else 0f
+        try {
+            val habits = repository.getAllHabits()
+            val completedCount = habits.count { it.isCompletedToday }
+            val totalCount = habits.size
+            val fraction = if (totalCount > 0) completedCount.toFloat() / totalCount.toFloat() else 0f
 
-        todayProgressView.setProgress(fraction)
-        todayProgressView.setCenterLabel("$completedCount/$totalCount", "completed")
-        tvHabitsCount.text = if (completedCount == totalCount && totalCount > 0) {
-            "🎉 All habits finished! Apps are completely unlocked."
-        } else {
-            "${totalCount - completedCount} habits left before apps unlock."
+            todayProgressView.setProgress(fraction)
+            todayProgressView.setCenterLabel("$completedCount/$totalCount", "completed")
+            tvHabitsCount.text = if (completedCount == totalCount && totalCount > 0) {
+                "🎉 All habits finished! Apps are completely unlocked."
+            } else {
+                "${totalCount - completedCount} habits left before apps unlock."
+            }
+
+            habitAdapter.updateData(habits)
+            settingsHabitAdapter.updateData(habits)
+            blockRuleAdapter.updateData(repository.getAllBlockRules())
+
+            // Refresh heatmap & streaks
+            heatmapView.setData(repository.getHistoryCompletions())
+            tvCurrentStreak.text = "${repository.getCurrentStreak()} Days"
+            tvBestStreak.text = "${repository.getBestStreak()} Days"
+        } catch (e: Throwable) {
+            android.util.Log.e("HabitsFirst", "Error refreshing data: ${e.message}")
         }
-
-        habitAdapter.updateData(habits)
-        settingsHabitAdapter.updateData(habits)
-        blockRuleAdapter.updateData(repository.getAllBlockRules())
-
-        // Refresh heatmap & streaks
-        heatmapView.setData(repository.getHistoryCompletions())
-        tvCurrentStreak.text = "${repository.getCurrentStreak()} Days"
-        tvBestStreak.text = "${repository.getBestStreak()} Days"
     }
 
     private fun checkPermissions() {
-        val hasUsage = usageTracker.hasUsageStatsPermission()
-        cardUsageNotice.visibility = if (hasUsage) View.GONE else View.VISIBLE
+        try {
+            val hasUsage = usageTracker.hasUsageStatsPermission()
+            cardUsageNotice.visibility = if (hasUsage) View.GONE else View.VISIBLE
 
-        // Accessibility service check
-        val isAccessibilityEnabled = isAccessibilityServiceEnabled()
-        cardAccessibilityNotice.visibility = if (isAccessibilityEnabled) View.GONE else View.VISIBLE
+            // Accessibility service check
+            val isAccessibilityEnabled = isAccessibilityServiceEnabled()
+            cardAccessibilityNotice.visibility = if (isAccessibilityEnabled) View.GONE else View.VISIBLE
+        } catch (_: Throwable) {}
     }
 
     private fun isAccessibilityServiceEnabled(): Boolean {
-        val expectedServiceName = "${packageName}/com.habitsfirst.app.service.HabitBlockerAccessibilityService"
-        val enabledServices = Settings.Secure.getString(
-            contentResolver,
-            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-        ) ?: return false
-        return enabledServices.contains(expectedServiceName)
+        return try {
+            val expectedServiceName = "${packageName}/com.habitsfirst.app.service.HabitBlockerAccessibilityService"
+            val enabledServices = Settings.Secure.getString(
+                contentResolver,
+                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+            ) ?: return false
+            enabledServices.contains(expectedServiceName)
+        } catch (_: Throwable) {
+            false
+        }
     }
 
     private fun checkProductiveAppsUsage() {
-        val habits = repository.getAllHabits().filter { it.type == HabitType.APP_USAGE }
-        for (habit in habits) {
-            val pkg = habit.targetPackageName ?: continue
-            val minutesToday = usageTracker.getMinutesUsedToday(pkg)
-            if (habit.currentValue != minutesToday) {
-                val isCompleted = minutesToday >= habit.targetValue
-                repository.updateHabit(habit.copy(currentValue = minutesToday, isCompletedToday = isCompleted))
+        try {
+            val habits = repository.getAllHabits().filter { it.type == HabitType.APP_USAGE }
+            for (habit in habits) {
+                val pkg = habit.targetPackageName ?: continue
+                val minutesToday = usageTracker.getMinutesUsedToday(pkg)
+                if (habit.currentValue != minutesToday) {
+                    val isCompleted = minutesToday >= habit.targetValue
+                    repository.updateHabit(habit.copy(currentValue = minutesToday, isCompletedToday = isCompleted))
+                }
             }
-        }
+        } catch (_: Throwable) {}
     }
 
     private fun handleHabitAction(habit: Habit) {

@@ -39,25 +39,31 @@ class TimerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_timer)
 
-        val rootLayout = findViewById<android.view.View>(R.id.timer_root_layout)
-        val origTop = rootLayout.paddingTop
-        val origBottom = rootLayout.paddingBottom
-        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(rootLayout) { _, insets ->
-            val statusBars = insets.getInsets(
-                androidx.core.view.WindowInsetsCompat.Type.statusBars() or
-                androidx.core.view.WindowInsetsCompat.Type.displayCutout()
-            )
-            val navBars = insets.getInsets(
-                androidx.core.view.WindowInsetsCompat.Type.navigationBars()
-            )
-            rootLayout.setPadding(
-                rootLayout.paddingLeft,
-                origTop + statusBars.top,
-                rootLayout.paddingRight,
-                origBottom + navBars.bottom
-            )
-            insets
-        }
+        try {
+            val rootLayout = findViewById<android.view.View>(R.id.timer_root_layout)
+            if (rootLayout != null) {
+                val origTop = rootLayout.paddingTop
+                val origBottom = rootLayout.paddingBottom
+                androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(rootLayout) { _, insets ->
+                    try {
+                        val statusBars = insets.getInsets(
+                            androidx.core.view.WindowInsetsCompat.Type.statusBars() or
+                            androidx.core.view.WindowInsetsCompat.Type.displayCutout()
+                        )
+                        val navBars = insets.getInsets(
+                            androidx.core.view.WindowInsetsCompat.Type.navigationBars()
+                        )
+                        rootLayout.setPadding(
+                            rootLayout.paddingLeft,
+                            origTop + statusBars.top,
+                            rootLayout.paddingRight,
+                            origBottom + navBars.bottom
+                        )
+                    } catch (_: Throwable) {}
+                    insets
+                }
+            }
+        } catch (_: Throwable) {}
 
         repository = HabitRepository.getInstance(this)
         val habitId = intent.getStringExtra(EXTRA_HABIT_ID)

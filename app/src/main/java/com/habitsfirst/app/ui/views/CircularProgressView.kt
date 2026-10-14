@@ -74,7 +74,7 @@ class CircularProgressView @JvmOverloads constructor(
         super.onSizeChanged(w, h, oldw, oldh)
         val stroke = 18f
         val padding = stroke / 2f + 8f
-        arcBounds.set(padding, padding, w - padding, h - padding)
+        arcBounds.set(padding, padding, maxOf(padding, w - padding), maxOf(padding, h - padding))
     }
 
     override fun onDraw(canvas: Canvas) {
